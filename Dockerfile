@@ -4,6 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
 
 RUN apt-get update && apt-get install -y \
+    ansible \
     build-essential \
     curl \
     git \
@@ -11,13 +12,19 @@ RUN apt-get update && apt-get install -y \
     htop \
     jq \
     nano \
+    net-tools \
+    nmap \
     nodejs \
     npm \
+    pass \
+    pwgen \
     python3 \
     python3-pip \
     python3-venv \
     ripgrep \
     sudo \
+    tldr \
+    tree \
     unzip \
     vim \
     wget \
@@ -30,5 +37,8 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /var/installers/claude && \
     curl -fsSL https://claude.ai/install.sh -o /var/installers/claude/install.sh
 
-# Gemini has no install script — npm install IS the download.
-RUN npm install -g @google/gemini-cli
+# OpenCode Installer
+RUN mkdir -p /var/installers/opencode && \
+    curl -fsSL https://opencode.ai/install -o /var/installers/opencode/install.sh
+
+# TODO: Install asdf-vm
