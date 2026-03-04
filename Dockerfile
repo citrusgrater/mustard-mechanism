@@ -3,9 +3,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
 
-RUN apt-get update
-
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     git \
@@ -24,9 +22,8 @@ RUN apt-get install -y \
     vim \
     wget \
     zip \
-    zsh
-
-RUN rm -rf /var/lib/apt/lists/*
+    zsh \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Claude Code via native installer
 RUN curl -fsSL https://claude.ai/install.sh | sh
