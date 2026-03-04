@@ -2,6 +2,7 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
+ENV PATH="/root/.local/bin:/root/.bun/bin:$PATH"
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -27,7 +28,5 @@ RUN apt-get update && apt-get install -y \
 
 # Install Claude Code via native installer
 RUN curl -fsSL https://claude.ai/install.sh | bash
-
-ENV PATH="/root/.local/bin:$PATH"
 
 RUN npm install -g @google/gemini-cli
