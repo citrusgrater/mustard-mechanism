@@ -6,6 +6,7 @@ A base Ubuntu 24.04 Docker image with common development tools pre-installed. Bu
 
 - [Usage](#usage)
 - [What's Included](#whats-included)
+- [Pre-downloaded Installers](#pre-downloaded-installers)
 
 ## Usage
 
@@ -28,5 +29,18 @@ FROM ghcr.io/citrusgrater/mustard-mechanism:latest
 | python3, python3-pip, python3-venv | apt |
 | zsh, vim, nano, htop | apt |
 | jq, ripgrep | apt |
-| claude (Claude Code) | native installer |
 | gemini-cli | npm |
+
+## Pre-downloaded Installers
+
+Some tools have their installers fetched at base-image build time and stored under `/var/installers/<tool>/`, so child images can run them without making outbound requests at build time.
+
+| Tool | Path |
+|------|------|
+| Claude Code | `/var/installers/claude/install.sh` |
+
+To use in a child image:
+
+```dockerfile
+RUN bash /var/installers/claude/install.sh
+```
