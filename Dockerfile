@@ -44,13 +44,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 COPY scripts/download-installers.sh /tmp/download-installers.sh
 RUN bash /tmp/download-installers.sh
 
-# Python-based AI tools — installed system-wide as root.
-# --break-system-packages is intentional: this is a Docker image, not a managed host.
-RUN pip3 install --break-system-packages --ignore-installed \
-    open-interpreter \
-    shell-gpt \
-    llm
-
 # Create the default container user.
 # UID 1000 matches the host developer UID to avoid bind-mount permission issues.
 # The ubuntu user (also UID 1000) is removed first to free the slot.
@@ -72,6 +65,12 @@ WORKDIR /home/dorfl
 #   ~/.asdf/shims     — asdf-managed runtimes (populated after: asdf plugin add <name> && asdf install)
 ENV PATH=/home/dorfl/.asdf/shims:/home/dorfl/.local/bin:/home/dorfl/.opencode/bin:${PATH}
 
+# Python-based AI tools — each tool gets an isolated uv virtualenv; binaries land in ~/.local/bin.
+# uv is pre-installed system-wide by download-installers.sh, so no conflicts with system Python.
+RUN uv tool install open-interpreter && \
+    uv tool install shell-gpt && \
+    uv tool install llm
+
 # Install Claude Code as dorfl so it lands in /home/dorfl/.local/bin.
 # Child images should remove ~/.claude* and replace them with runtime symlinks.
 RUN bash /var/installers/claude/install.sh
@@ -79,6 +78,5 @@ RUN bash /var/installers/claude/install.sh
 # OpenCode — pre-downloaded installer; lands in ~/.opencode/bin
 RUN bash /var/installers/opencode/install.sh
 
-# Mistral Vibe — pre-downloaded installer; fetches uv then runs: uv tool install mistral-vibe
-# Result: uv → ~/.local/bin/uv, vibe → ~/.local/bin/vibe
+# Mistral Vibe — pre-downloaded installer; detects uv is already present, runs: uv tool install mistral-vibe
 RUN bash /var/installers/mistral-vibe/install.sh
