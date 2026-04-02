@@ -73,12 +73,15 @@ curl -fsSL \
     | tar -xz -C /usr/local/bin aichat
 chmod 755 /usr/local/bin/aichat
 
-step "Installing asdf v${ASDF_VERSION} (linux-${GO_ARCH})..."
-# go install requires Go 1.24.9+ but Ubuntu 24.04 ships 1.22, so use the pre-compiled release.
-curl -fsSL \
-    "https://github.com/asdf-vm/asdf/releases/download/v${ASDF_VERSION}/asdf-linux-${GO_ARCH}.tar.gz" \
-    | tar -xz -C /usr/local/bin asdf
-chmod 755 /usr/local/bin/asdf
+# asdf-vm: disabled — arm64 release artifact naming is inconsistent across versions.
+# To install manually inside a container:
+#   go install github.com/asdf-vm/asdf/cmd/asdf@v0.18.1   (requires Go 1.24.9+)
+# ASDF_VERSION is kept here so it's easy to re-enable once verified.
+# step "Installing asdf v${ASDF_VERSION} (linux-${GO_ARCH})..."
+# curl -fsSL \
+#     "https://github.com/asdf-vm/asdf/releases/download/v${ASDF_VERSION}/asdf-linux-${GO_ARCH}.tar.gz" \
+#     | tar -xz -C /usr/local/bin asdf
+# chmod 755 /usr/local/bin/asdf
 
 step "Installing tea v${TEA_VERSION} (linux-${GO_ARCH})..."
 # go.mod requires Go 1.26 (unreleased); use the pre-compiled binary from dl.gitea.com.

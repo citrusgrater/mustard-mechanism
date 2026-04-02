@@ -62,7 +62,7 @@ WORKDIR /home/dorfl
 # Extend PATH to include:
 #   ~/.local/bin      — Claude Code, uv, mistral-vibe (vibe), and other uv-managed tools
 #   ~/.opencode/bin   — OpenCode
-#   ~/.asdf/shims     — asdf-managed runtimes (populated after: asdf plugin add <name> && asdf install)
+#   ~/.asdf/shims     — asdf-managed runtimes; harmless if asdf is not yet installed
 ENV PATH=/home/dorfl/.asdf/shims:/home/dorfl/.local/bin:/home/dorfl/.opencode/bin:${PATH}
 
 # Python-based AI tools — each tool gets an isolated uv virtualenv; binaries land in ~/.local/bin.
