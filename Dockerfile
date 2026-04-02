@@ -11,11 +11,11 @@ RUN apt-get update && apt-get install -y \
     golang \
     htop \
     jq \
+    libportaudio2 \
+    libsecret-1-0 \
     nano \
     net-tools \
     nmap \
-    nodejs \
-    npm \
     pass \
     pwgen \
     python3 \
@@ -32,36 +32,24 @@ RUN apt-get update && apt-get install -y \
     zsh \
     && rm -rf /var/lib/apt/lists/*
 
-# Pre-download installers to avoid 429s at child-image build time.
-# /var/installers/<tool>/ is the convention — one directory per tool.
-RUN mkdir -p /var/installers/claude && \
-    curl -fsSL https://claude.ai/install.sh -o /var/installers/claude/install.sh
+# Node.js 22 via NodeSource — Ubuntu 24.04's default nodejs (v18) is too old
+# for gemini-cli (requires >=20) and opencode.
+# NodeSource bundles npm, so no separate npm install is needed.
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
-# OpenCode Installer
-RUN mkdir -p /var/installers/opencode && \
-    curl -fsSL https://opencode.ai/install -o /var/installers/opencode/install.sh
-
-# Mistral Vibe Installer
-RUN mkdir -p /var/installers/mistral-vibe && \
-    curl -LsSf https://mistral.ai/vibe/install.sh -o /var/installers/mistral-vibe/install.sh
-
-# aichat — download the musl binary from GitHub Releases and place it system-wide.
-# The release archive contains a single file (the binary) at the root of the tar.
-RUN curl -fsSL https://github.com/sigoden/aichat/releases/download/v0.30.0/aichat-v0.30.0-x86_64-unknown-linux-musl.tar.gz \
-    | tar -xz -C /usr/local/bin aichat && \
-    chmod 755 /usr/local/bin/aichat
+# Download all external installers and pre-compiled binaries in one layer.
+# Versions and URLs live in the script — edit there, not here.
+COPY scripts/download-installers.sh /tmp/download-installers.sh
+RUN bash /tmp/download-installers.sh
 
 # Python-based AI tools — installed system-wide as root.
 # --break-system-packages is intentional: this is a Docker image, not a managed host.
-RUN pip3 install --break-system-packages \
+RUN pip3 install --break-system-packages --ignore-installed \
     open-interpreter \
     shell-gpt \
     llm
-
-# asdf-vm — compiled via the system Go toolchain, then exposed system-wide.
-# GOPATH defaults to /root/go when running as root; the binary is copied out to /usr/local/bin.
-RUN go install github.com/asdf-vm/asdf/cmd/asdf@v0.18.1 && \
-    cp /root/go/bin/asdf /usr/local/bin/asdf
 
 # Create the default container user.
 # UID 1000 matches the host developer UID to avoid bind-mount permission issues.
@@ -78,8 +66,11 @@ RUN npm install -g @google/gemini-cli
 USER dorfl
 WORKDIR /home/dorfl
 
-# Extend PATH to include user-local bin directories populated by the installers below.
-ENV PATH=/home/dorfl/.local/bin:/home/dorfl/.opencode/bin:${PATH}
+# Extend PATH to include:
+#   ~/.local/bin      — Claude Code, uv, mistral-vibe (vibe), and other uv-managed tools
+#   ~/.opencode/bin   — OpenCode
+#   ~/.asdf/shims     — asdf-managed runtimes (populated after: asdf plugin add <name> && asdf install)
+ENV PATH=/home/dorfl/.asdf/shims:/home/dorfl/.local/bin:/home/dorfl/.opencode/bin:${PATH}
 
 # Install Claude Code as dorfl so it lands in /home/dorfl/.local/bin.
 # Child images should remove ~/.claude* and replace them with runtime symlinks.
@@ -88,5 +79,6 @@ RUN bash /var/installers/claude/install.sh
 # OpenCode — pre-downloaded installer; lands in ~/.opencode/bin
 RUN bash /var/installers/opencode/install.sh
 
-# Mistral Vibe — pre-downloaded installer; downloads uv on first run, lands in ~/.local/bin
+# Mistral Vibe — pre-downloaded installer; fetches uv then runs: uv tool install mistral-vibe
+# Result: uv → ~/.local/bin/uv, vibe → ~/.local/bin/vibe
 RUN bash /var/installers/mistral-vibe/install.sh
