@@ -83,12 +83,15 @@ chmod 755 /usr/local/bin/aichat
 #     | tar -xz -C /usr/local/bin asdf
 # chmod 755 /usr/local/bin/asdf
 
-step "Installing tea v${TEA_VERSION} (linux-${GO_ARCH})..."
-# go.mod requires Go 1.26 (unreleased); use the pre-compiled binary from dl.gitea.com.
-curl -fsSL \
-    "https://dl.gitea.com/tea/v${TEA_VERSION}/tea-v${TEA_VERSION}-linux-${GO_ARCH}" \
-    -o /usr/local/bin/tea
-chmod 755 /usr/local/bin/tea
+# tea (Gitea CLI): disabled — dl.gitea.com arm64 artifact URL does not match expected pattern.
+# To install manually inside a container, verify the exact filename on:
+#   https://dl.gitea.com/tea/v0.12.0/
+# TEA_VERSION is kept here so it's easy to re-enable once verified.
+# step "Installing tea v${TEA_VERSION} (linux-${GO_ARCH})..."
+# curl -fsSL \
+#     "https://dl.gitea.com/tea/v${TEA_VERSION}/tea-v${TEA_VERSION}-linux-${GO_ARCH}" \
+#     -o /usr/local/bin/tea
+# chmod 755 /usr/local/bin/tea
 
 echo
 echo "==> All downloads complete."
